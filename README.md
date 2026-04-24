@@ -1,4 +1,4 @@
-# 🛍️ Automaton AI: Voice Order Confirmation System
+# 🛍️ Automation AI: Voice Order Confirmation System
 **Powered by ADVIT™ AI Labs**
 
 An industry-grade, multi-modal AI Agent designed to revolutionize e-commerce order confirmation. Automaton AI seamlessly handles automated outbound voice calls, intelligent negotiation, WhatsApp fallback, and real-time analytics, all managed through a premium command-center dashboard.
