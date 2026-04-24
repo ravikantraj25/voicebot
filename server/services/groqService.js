@@ -155,3 +155,8 @@ RULES:
 };
 
 module.exports = { generateCallSummary, parseSearchQuery, processWhatsAppMessage };
+
+// ─── Re-export RAG-enhanced version for new code ──────────────────
+// Use generatePolicyAwareSummary when you need policy context in summaries
+const { generatePolicyAwareSummary } = require('./ragService');
+module.exports.generatePolicyAwareSummary = generatePolicyAwareSummary;
