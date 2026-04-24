@@ -42,20 +42,6 @@ export const generateSummary = (orderId) => {
   return request(`/call/summary/${orderId}`, { method: 'POST' });
 };
 
-export const sendVoiceCommand = async (audioBlob) => {
-  const formData = new FormData();
-  formData.append('audio', audioBlob, 'command.webm');
-  
-  const response = await fetch(`${API_BASE}/call/voice-command`, {
-    method: 'POST',
-    body: formData, // Do not set Content-Type, browser sets it automatically with boundary for FormData
-  });
-  
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.message || 'Voice command failed');
-  return data;
-};
-
 // ─── Order APIs ─────────────────────────────────
 export const getOrders = () => request('/orders');
 

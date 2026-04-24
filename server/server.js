@@ -7,15 +7,11 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
-const WebSocket = require('ws');
-const url = require('url');
 const connectDB = require('./config/db');
-const ConversationManager = require('./services/ConversationManager');
 
 // Import routes
 const callRoutes = require('./routes/callRoutes');
 const twilioRoutes = require('./routes/twilioRoutes');
-const exotelRoutes = require('./routes/exotelRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const productRoutes = require('./routes/productRoutes');
 const shopRoutes = require('./routes/shopRoutes');
@@ -50,55 +46,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// ─── Twilio Media Streams (WebSocket) ────────────────────────
-const wss = new WebSocket.Server({ noServer: true });
-
-server.on('upgrade', (request, socket, head) => {
-  const pathname = url.parse(request.url).pathname;
-
-  if (pathname === '/api/twilio/stream') {
-    wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request);
-    });
-  }
-});
-
-wss.on('connection', (ws) => {
-  console.log('🎙️ Twilio Media Stream connected');
-  let manager = null;
-
-  ws.on('message', (message) => {
-    try {
-      const msg = JSON.parse(message);
-      
-      if (msg.event === 'start') {
-        const customParams = msg.start?.customParameters || {};
-        manager = new ConversationManager(
-          ws, 
-          customParams.orderId || 'unknown', 
-          customParams.language || 'english', 
-          io,
-          customParams.isInbound === 'true',
-          customParams.isNewCustomer === 'true'
-        );
-        manager.streamSid = msg.start?.streamSid;
-      } else if (msg.event === 'media' && manager) {
-        // Twilio sends mulaw audio payload
-        manager.handleAudio(msg.media.payload);
-      } else if (msg.event === 'stop') {
-        console.log('🎙️ Twilio Media Stream stopped');
-      }
-    } catch (e) {
-      console.error('WebSocket msg error:', e);
-    }
-  });
-
-  ws.on('close', () => {
-    console.log('🎙️ Twilio Media Stream disconnected');
-    if (manager) manager.destroy();
-  });
-});
-
 // ─── Middleware ──────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
@@ -116,7 +63,6 @@ app.use((req, res, next) => {
 // ─── API Routes ─────────────────────────────────────────────
 app.use('/api/call', callRoutes);
 app.use('/api/twilio', twilioRoutes);
-app.use('/api/exotel', exotelRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/shop', shopRoutes);

@@ -6,10 +6,6 @@
 const Order = require('../models/Order');
 const { initiateCall } = require('../services/twilioService');
 const { generateCallSummary } = require('../services/groqService');
-const { transcribeAudio } = require('../services/deepgramService');
-const Groq = require('groq-sdk');
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 /**
  * POST /api/call
@@ -40,7 +36,7 @@ const startCall = async (req, res) => {
       productPrice: productPrice || 0,
     });
 
-    // Initiate Exotel call
+    // Initiate Twilio call with recording enabled
     const call = await initiateCall(phoneNumber, order._id.toString(), language);
     order.callSid = call.sid;
     await order.save();
@@ -198,57 +194,4 @@ const generateSummary = async (req, res) => {
   }
 };
 
-/**
- * POST /api/call/voice-command
- * Transcribes admin voice and returns parsed intent via Groq
- */
-const handleVoiceCommand = async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No audio provided' });
-    }
-
-    // 1. Transcribe audio using Deepgram
-    const transcript = await transcribeAudio(req.file.buffer);
-    if (!transcript) {
-      return res.status(200).json({ success: true, intent: { action: 'none' }, transcript: '' });
-    }
-
-    // 2. Parse intent using Groq LLM
-    const completion = await groq.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: `You are an intent parser for a dashboard voice assistant.
-Parse the following transcript into a JSON object with this exact structure:
-{
-  "action": "call_pending" | "call_language" | "filter_failed" | "refresh" | "search" | "unknown",
-  "language": "hindi" | "english" | "kannada" | "marathi" | null,
-  "searchQuery": "optional exact text to search for"
-}
-Examples:
-"call all pending hindi orders" -> {"action": "call_language", "language": "hindi"}
-"show me failed calls" -> {"action": "filter_failed"}
-"how many confirmed today" -> {"action": "search", "searchQuery": "how many confirmed today"}
-Only return valid JSON, nothing else.`
-        },
-        { role: 'user', content: transcript }
-      ],
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' }
-    });
-
-    const intent = JSON.parse(completion.choices[0].message.content);
-
-    res.status(200).json({
-      success: true,
-      transcript,
-      intent
-    });
-  } catch (error) {
-    console.error('❌ Voice command error:', error);
-    res.status(500).json({ success: false, message: 'Voice command failed' });
-  }
-};
-
-module.exports = { startCall, retryCall, batchCall, generateSummary, handleVoiceCommand };
+module.exports = { startCall, retryCall, batchCall, generateSummary };

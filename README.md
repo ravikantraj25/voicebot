@@ -1,134 +1,215 @@
-# 🚀 Automaton AI Voice Bot (Enterprise Edition)
+# 🤖 Automaton AI Infosystem — Voice Order Confirmation Bot
 
-A production-ready, real-time Conversational Voice AI Agent designed for eCommerce order confirmations. This system completely replaces traditional "Press 1 for Yes, Press 2 for No" IVR systems with a fully conversational, highly intelligent AI that speaks native Indian languages, processes emotions in real-time, and operates with sub-second latency.
-
----
-
-## 🌟 Key Features
-
-1. **Real-time Conversational AI:** Streams raw audio via WebSockets to Groq (Llama 3.3) for instant, natural conversations.
-2. **Native Indian Languages:** Uses **Sarvam AI** for hyper-realistic Hindi, Kannada, and Marathi text-to-speech and speech-to-text.
-3. **Ultra-fast English Transcription:** Uses **Deepgram** for sub-second English audio transcription.
-4. **Real-Time Emotion Meter:** Uses **Hume AI** to analyze the caller's vocal prosody and updates a dynamic dashboard gauge (Happy, Hesitant, Frustrated, etc.).
-5. **Live Dashboard Visualizers:** Features a live chat-bubble transcript panel and canvas-based audio waveforms that bounce when the customer or AI speaks.
-6. **Admin Voice Commands:** A floating microphone button allows admins to control the dashboard entirely by voice (e.g., "Call all pending Kannada orders").
-7. **Omnichannel Fallback:** Automatically sends a WhatsApp message with order details if a call goes unanswered.
-8. **AI Call Summaries:** Groq automatically reads the full transcript after every call to generate a short summary, sentiment score, and flagged issue warnings.
-9. **Natural Language Search:** Admins can filter dashboard data by typing conversational queries (e.g., "Show me failed calls from today").
-10. **Socket.io Real-time UI:** The entire dashboard updates instantly without page refreshes.
+> **Hackathon Project** — An enterprise-grade multilingual voice bot that automates order confirmation through intelligent office calls, powered by Twilio, Groq AI, and real-time Socket.io.
 
 ---
 
-## 📂 Project Structure & File Explanations
+## 🎯 Problem Statement
 
-### Backend (`/server`)
-The backend is an Express Node.js application responsible for orchestrating WebSockets, API endpoints, and 6 different external AI services.
+**Voice Assistance Bot for Automaton AI Infosystem Office Call Order Acceptance**
 
-*   **`server.js`**
-    The main entry point. Sets up the Express HTTP server, configures the `Socket.io` server for dashboard updates, and creates the raw `ws` WebSocket server to handle incoming Twilio Media Streams.
-*   **`seed.js`**
-    A utility script to populate the MongoDB database with realistic mock eCommerce orders to test the system.
-
-**`/services` (The Core Engine)**
-*   **`ConversationManager.js`**
-    *The Brain.* This class is instantiated for every active call. It manages the real-time WebSocket connection to Twilio, buffers the incoming audio, pipes it to Deepgram/Sarvam/Hume, sends the text to Groq LLM, and streams the AI's audio response back to the user.
-*   **`deepgramService.js`**
-    Connects to Deepgram's API. Used for ultra-fast transcription of English phone calls and for parsing the audio from the Admin Voice Command button.
-*   **`sarvamService.js`**
-    Connects to Sarvam AI. Uses the `saarika:v2` model to transcribe Indian languages and the `bulbul:v1` model to generate the native-sounding Indian language audio responses.
-*   **`humeService.js`**
-    Connects to Hume's Empathic Voice API. Analyzes audio chunks to detect human emotion (prosody) and maps it to 5 simplified states for the dashboard.
-*   **`groqService.js`**
-    Connects to Groq. Uses Llama 3.3 70B to generate post-call summaries, extract sentiment, and parse natural language queries for the dashboard search bar.
-*   **`twilioService.js`**
-    Handles the traditional Twilio REST API calls. Used to initiate the outbound phone calls and send the WhatsApp fallback/confirmation messages.
-
-**`/controllers`**
-*   **`callController.js`**
-    Handles REST API requests from the frontend to start calls, retry calls, do batch calls, and process the Admin Voice Commands via `multer` audio uploads.
-*   **`twilioController.js`**
-    Handles the Webhook endpoints that Twilio pings when a call connects. Instead of returning TwiML to play a static message, this controller returns `<Connect><Stream>` to hand off the call to our WebSocket server.
-*   **`orderController.js`**
-    Handles CRUD operations for the Orders database and calculates the statistics for the dashboard Analytics Cards.
-
-**`/models`**
-*   **`Order.js`**
-    The Mongoose schema defining how an order, its product details, the call transcript arrays, and AI summaries are stored in MongoDB.
+Develop a multilingual voice assistance bot for customer order acceptance through automated office calls, supporting **English, Hindi, Kannada, and Marathi**.
 
 ---
 
-### Frontend (`/client`)
-The frontend is a React application built with Vite and Tailwind CSS. It uses a premium "Sunset" glassmorphism aesthetic.
+## ✨ Features
 
-**`/pages`**
-*   **`Dashboard.jsx`**
-    The central hub. It maintains the Socket.io connection to the server, holds the global state for active calls, and renders all the visualizer components based on real-time events.
+### Core Features
+| Feature | Description |
+|---------|-------------|
+| 📞 **Multilingual Voice Calls** | Automated calls in English, Hindi, Kannada & Marathi |
+| 🛒 **Real Product Details** | Bot reads actual product name, quantity & price during calls |
+| 🎯 **Multi-Level IVR** | Press 1 (Confirm), Press 2 (Reject), Press 3 (Support Menu) |
+| 🛠️ **Customer Support Menu** | Delivery, Payment, Product issues & Agent transfer |
+| 📊 **Real-time Dashboard** | Live analytics with Socket.io WebSocket updates |
 
-**`/components` (The Visualizers)**
-*   **`LiveTranscriptPanel.jsx`**
-    Appears only during active calls. Renders the chat bubbles word-by-word, handles auto-scrolling, and displays the "Aria is reasoning..." animations.
-*   **`EmotionMeter.jsx`**
-    An animated SVG circular gauge that receives real-time scores from Hume AI and shifts its colors and icons based on the customer's mood.
-*   **`AudioWaveform.jsx`**
-    Uses HTML5 Canvas to render bouncing frequency bars that animate whenever the Customer or the AI is speaking.
-*   **`AdminVoiceCommand.jsx`**
-    The floating microphone button in the bottom right. Records the admin's voice using the browser's `MediaRecorder` API and sends it to the backend to control the dashboard.
-*   **`AISearchBar.jsx`**
-    The top search bar that passes natural language queries to Groq to filter the data table.
-*   **`OrderTable.jsx` & `AnalyticsCards.jsx`**
-    Displays the database records, AI summary tooltips, WhatsApp status badges, and aggregate statistics.
+### AI-Powered Features
+| Feature | Technology |
+|---------|------------|
+| 🔍 **Natural Language Search** | Type "show failed Kannada calls" → AI filters results |
+| 🧠 **AI Call Summaries** | Groq Llama 3.3 70B generates post-call summaries |
+| 😊 **Sentiment Analysis** | AI detects positive/neutral/negative customer sentiment |
+| 🚩 **Smart Flagging** | Auto-flags calls where customers complained or escalated |
 
-**`/services`**
-*   **`api.js`**
-    The frontend HTTP client that wraps `fetch` to easily communicate with the backend REST endpoints.
+### Enterprise Features
+| Feature | Description |
+|---------|-------------|
+| 🎙️ **Call Recording** | Every call recorded & playable in the dashboard |
+| 📱 **WhatsApp Fallback** | Auto-sends WhatsApp if call goes unanswered |
+| 📦 **Batch Calling (CSV)** | Upload CSV to call multiple customers at once |
+| 📥 **CSV Export** | Download call reports with all data |
+| ⏰ **Smart Retry Predictor** | AI suggests best time to retry failed calls |
+| 📈 **Interactive Charts** | Custom SVG donut chart for call distribution |
+| 🔴 **Live Call Indicator** | Pulsing LIVE badge when calls are active |
 
 ---
 
-## ⚙️ Environment Variables Setup
+## 🏗️ Tech Stack
 
-You must create a `.env` file inside the `/server` folder with the following keys:
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18, Vite, Tailwind CSS |
+| **Backend** | Node.js, Express.js |
+| **Database** | MongoDB Atlas |
+| **Voice** | Twilio Voice SDK |
+| **AI/LLM** | Groq (Llama 3.3 70B Versatile) |
+| **Real-time** | Socket.io WebSockets |
+| **Messaging** | Twilio WhatsApp Sandbox |
+| **Tunneling** | ngrok (for Twilio webhooks) |
 
-```env
-# Twilio Configuration
-TWILIO_ACCOUNT_SID=your_sid
-TWILIO_AUTH_TOKEN=your_token
-TWILIO_PHONE_NUMBER=your_twilio_number
-TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+---
 
-# Database & Server
-MONGODB_URI=your_mongodb_connection_string
-PORT=5000
-BASE_URL=https://your-ngrok-url.ngrok-free.app # Crucial for WebSockets
+## 📁 Project Structure
 
-# AI Engine Keys
-GROQ_API_KEY=your_groq_key             # Llama 3.3 Reasoning
-SARVAM_API_KEY=your_sarvam_key         # Indian Language Speech
-DEEPGRAM_API_KEY=your_deepgram_key     # English Fast Speech
-HUME_API_KEY=your_hume_key             # Emotion Tracking
-HUME_SECRET_KEY=your_hume_secret
+```
+voice-order-bot/
+├── client/                    # React Frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── AISearchBar.jsx       # 🔍 NL search (Groq)
+│   │   │   ├── ActivityFeed.jsx      # ⚡ Real-time event feed
+│   │   │   ├── AnalyticsCards.jsx    # 📊 8 metric cards
+│   │   │   ├── AnalyticsChart.jsx    # 📈 SVG donut chart
+│   │   │   ├── BatchUpload.jsx       # 📦 CSV batch calling
+│   │   │   ├── CallForm.jsx          # 📞 Call form + products
+│   │   │   ├── CallScriptPreview.jsx # 🔊 Interactive flow preview
+│   │   │   ├── Header.jsx            # 🔴 Header + LIVE badge
+│   │   │   ├── OrderTable.jsx        # 📋 Enhanced call logs
+│   │   │   ├── RecordingPlayer.jsx   # 🎙️ Audio playback modal
+│   │   │   └── SmartRetryBadge.jsx   # ⏰ Retry time predictor
+│   │   ├── hooks/
+│   │   │   └── useSocket.js          # 🔌 Socket.io hook
+│   │   ├── pages/
+│   │   │   └── Dashboard.jsx         # 🏠 Main dashboard
+│   │   └── services/
+│   │       └── api.js                # 📡 HTTP + API client
+│   └── index.html
+│
+├── server/                    # Node.js Backend
+│   ├── config/
+│   │   └── db.js                     # MongoDB connection
+│   ├── controllers/
+│   │   ├── callController.js         # Call initiation + AI summaries
+│   │   ├── orderController.js        # Orders + NL search + analytics
+│   │   └── twilioController.js       # Multi-level IVR + recording
+│   ├── models/
+│   │   └── Order.js                  # Enhanced schema (product, sentiment, etc.)
+│   ├── routes/
+│   │   ├── callRoutes.js
+│   │   ├── orderRoutes.js
+│   │   └── twilioRoutes.js
+│   ├── services/
+│   │   ├── groqService.js            # 🧠 Groq AI (summary + search)
+│   │   ├── messageService.js         # 🗣️ Multilingual voice messages
+│   │   └── twilioService.js          # 📞 Twilio + WhatsApp
+│   ├── seed.js                       # 🌱 Database seeder
+│   └── server.js                     # 🚀 Express + Socket.io
 ```
 
 ---
 
-## 🚀 How to Run Locally
+## ⚡ Quick Start
 
-1. **Start ngrok:** Twilio requires a public URL to send webhooks and connect to WebSockets.
-   `ngrok http 5000`
-   *(Update `BASE_URL` in your `.env` with the generated ngrok URL).*
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas account
+- Twilio account (free trial)
+- Groq API key (free at groq.com)
+- ngrok (for Twilio webhooks)
 
-2. **Start the Backend:**
-   ```bash
-   cd server
-   npm install
-   node seed.js # (Optional) Populate mock data
-   npm run dev
-   ```
+### 1. Clone & Install
+```bash
+# Install backend
+cd server
+npm install
 
-3. **Start the Frontend:**
-   ```bash
-   cd client
-   npm install
-   npm run dev
-   ```
+# Install frontend
+cd ../client
+npm install
+```
 
-Open `http://localhost:5173` to view the dashboard and start automating your calls!
+### 2. Configure Environment
+Create `server/.env`:
+```env
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_token
+TWILIO_PHONE_NUMBER=+1234567890
+MONGODB_URI=your_mongodb_uri
+PORT=5000
+BASE_URL=https://your-ngrok-url.ngrok-free.dev
+GROQ_API_KEY=your_groq_key
+TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886
+```
+
+### 3. Seed Database
+```bash
+cd server
+node seed.js
+```
+
+### 4. Start ngrok
+```bash
+ngrok http 5000
+```
+Update `BASE_URL` in `.env` with the ngrok URL.
+
+### 5. Run
+```bash
+# Terminal 1 — Backend
+cd server && npm run dev
+
+# Terminal 2 — Frontend
+cd client && npm run dev
+```
+
+Dashboard: **http://localhost:3000**
+API: **http://localhost:5000/api**
+
+---
+
+## 🎮 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/call` | Initiate call with product details |
+| POST | `/api/call/retry/:id` | Retry a failed call |
+| POST | `/api/call/batch` | Batch call from CSV |
+| POST | `/api/call/summary/:id` | Generate AI summary |
+| GET | `/api/orders` | Get all call logs |
+| GET | `/api/orders/analytics` | Get analytics dashboard data |
+| POST | `/api/orders/search` | AI natural language search |
+| GET | `/api/orders/export` | Download CSV report |
+| DELETE | `/api/orders/:id` | Delete a record |
+| POST | `/api/twilio/voice` | TwiML main menu |
+| POST | `/api/twilio/response` | Process DTMF input |
+| POST | `/api/twilio/support` | Support sub-menu |
+| POST | `/api/twilio/status` | Call status callback |
+| POST | `/api/twilio/recording` | Recording ready callback |
+| GET | `/api/health` | Health check |
+
+---
+
+## 🎯 Live Demo Flow
+
+1. Open dashboard → Shows **Connected** + 8 analytics cards
+2. Select product → Pick "Wireless Bluetooth Headphones — ₹1499"
+3. Enter phone → Start call
+4. Customer answers → Hears product details in selected language
+5. Customer presses 1 → Order confirmed
+6. Dashboard updates **instantly** via Socket.io
+7. **AI Summary** appears as toast notification
+8. Type in search → `"show confirmed Hindi calls"` → Table filters
+9. Click **Play** button → Listen to actual call recording
+10. If no answer → **WhatsApp fallback** sent automatically
+
+---
+
+## 👥 Team
+
+**Automaton AI Infosystem** — Hackathon Submission
+
+---
+
+## 📄 License
+
+MIT License — Built for demonstration purposes.

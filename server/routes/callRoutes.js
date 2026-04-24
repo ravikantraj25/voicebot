@@ -7,15 +7,11 @@
  */
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const { startCall, retryCall, batchCall, generateSummary, handleVoiceCommand } = require('../controllers/callController');
-
-const upload = multer({ storage: multer.memoryStorage() });
+const { startCall, retryCall, batchCall, generateSummary } = require('../controllers/callController');
 
 router.post('/', startCall);
 router.post('/retry/:id', retryCall);
 router.post('/batch', batchCall);
 router.post('/summary/:id', generateSummary);
-router.post('/voice-command', upload.single('audio'), handleVoiceCommand);
 
 module.exports = router;

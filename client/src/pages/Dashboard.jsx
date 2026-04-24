@@ -11,8 +11,6 @@ import Header from '../components/Header';
 import AnalyticsCards from '../components/AnalyticsCards';
 import AnalyticsChart from '../components/AnalyticsChart';
 import AISearchBar from '../components/AISearchBar';
-import LiveTranscriptPanel from '../components/LiveTranscriptPanel';
-import AdminVoiceCommand from '../components/AdminVoiceCommand';
 import CallForm from '../components/CallForm';
 import CallScriptPreview from '../components/CallScriptPreview';
 import BatchUpload from '../components/BatchUpload';
@@ -51,13 +49,6 @@ const Dashboard = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('english');
   const [activeCallCount, setActiveCallCount] = useState(0);
   const [searchActive, setSearchActive] = useState(false);
-
-  // Live Call State
-  const [isLive, setIsLive] = useState(false);
-  const [liveLanguage, setLiveLanguage] = useState('');
-  const [liveTranscripts, setLiveTranscripts] = useState([]);
-  const [emotionData, setEmotionData] = useState({ emotion: 'neutral', intensity: 10 });
-  const [isBotThinking, setIsBotThinking] = useState(false);
 
   const socketRef = useRef(null);
 
@@ -118,30 +109,8 @@ const Dashboard = () => {
       });
     });
 
-    // ─── Live Streaming Events ───────────────────
-    socket.on('liveCallStarted', (data) => {
-      setIsLive(true);
-      setLiveLanguage(data.language);
-      setLiveTranscripts([]);
-      setEmotionData({ emotion: 'neutral', intensity: 10 });
-    });
-
-    socket.on('newTranscript', (data) => {
-      setIsBotThinking(false);
-      setLiveTranscripts((prev) => [...prev, { role: data.role, text: data.text }]);
-    });
-
-    socket.on('botThinking', () => {
-      setIsBotThinking(true);
-    });
-
-    socket.on('emotionUpdated', (data) => {
-      setEmotionData(data);
-    });
-
     socket.on('activeCalls', (calls) => {
       setActiveCallCount(calls.length);
-      if (calls.length === 0) setIsLive(false);
     });
 
     return () => socket.disconnect();
@@ -238,31 +207,6 @@ const Dashboard = () => {
     setSearchActive(false);
   };
 
-  const handleVoiceIntent = async (intent) => {
-    if (intent.action === 'refresh') {
-      await fetchData();
-      toast.success('Dashboard refreshed via voice');
-    } else if (intent.action === 'filter_failed') {
-      const failed = orders.filter(o => o.status === 'failed' || o.status === 'rejected' || o.status === 'no-response');
-      setDisplayOrders(failed);
-      setSearchActive(true);
-    } else if (intent.action === 'call_language' && intent.language) {
-      // Find pending orders for that language and batch call them
-      const pendingForLang = orders.filter(o => o.status === 'pending' && o.language === intent.language);
-      if (pendingForLang.length > 0) {
-        handleBatchCall(pendingForLang);
-      } else {
-        toast.error(`No pending ${intent.language} orders found`);
-      }
-    } else if (intent.action === 'search' && intent.searchQuery) {
-      // Simulate typing in the AI search bar
-      handleSearchResults(
-        orders.filter(o => JSON.stringify(o).toLowerCase().includes(intent.searchQuery.toLowerCase())), 
-        `Voice Search: ${intent.searchQuery}`
-      );
-    }
-  };
-
   // ─── Render ────────────────────────────────────────
   return (
     <div className="min-h-screen">
@@ -274,15 +218,6 @@ const Dashboard = () => {
           <section>
             <AISearchBar onSearchResults={handleSearchResults} onClear={handleSearchClear} />
           </section>
-
-          {/* Live Transcript Panel */}
-          <LiveTranscriptPanel 
-            transcripts={liveTranscripts}
-            isLive={isLive}
-            language={liveLanguage}
-            emotionData={emotionData}
-            isBotThinking={isBotThinking}
-          />
 
           {/* Analytics Cards */}
           <section>
@@ -346,9 +281,6 @@ const Dashboard = () => {
           </div>
         </div>
       </footer>
-
-      {/* Admin Floating Voice Command */}
-      <AdminVoiceCommand onCommandExecuted={handleVoiceIntent} />
     </div>
   );
 };

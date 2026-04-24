@@ -4,8 +4,6 @@
  * enhanced analytics with sentiment & WhatsApp stats
  */
 const Order = require('../models/Order');
-const Customer = require('../models/Customer');
-const { initiateCall } = require('../services/twilioService');
 const { parseSearchQuery } = require('../services/groqService');
 
 /**
@@ -142,49 +140,6 @@ const searchOrders = async (req, res) => {
 };
 
 /**
- * POST /api/orders
- * Auto-creates an order and immediately initiates an outbound AI call.
- */
-const createOrder = async (req, res) => {
-  try {
-    const { phoneNumber, productName, productQty, productPrice } = req.body;
-    
-    if (!phoneNumber || !productName) {
-      return res.status(400).json({ success: false, message: 'Phone number and product name are required' });
-    }
-
-    // Lookup customer language
-    const customer = await Customer.findOne({ phoneNumber });
-    const language = customer?.preferredLanguage || 'english';
-
-    // Create Order
-    const order = await Order.create({
-      phoneNumber,
-      language,
-      status: 'pending',
-      productName,
-      productQty: productQty || 1,
-      productPrice: productPrice || 0,
-    });
-
-    // Auto-initiate call
-    const call = await initiateCall(phoneNumber, order._id.toString(), language);
-    order.callSid = call.sid;
-    await order.save();
-
-    console.log(`🤖 Auto-call triggered for order ${order._id}`);
-
-    const io = req.app.get('io');
-    io.emit('orderUpdated');
-
-    res.status(201).json({ success: true, message: 'Order created and AI call triggered', data: order });
-  } catch (error) {
-    console.error(`❌ Create order error: ${error.message}`);
-    res.status(500).json({ success: false, message: 'Failed to create order' });
-  }
-};
-
-/**
  * DELETE /api/orders/:id
  */
 const deleteOrder = async (req, res) => {
@@ -235,4 +190,4 @@ const exportCSV = async (req, res) => {
   }
 };
 
-module.exports = { getOrders, getAnalytics, searchOrders, deleteOrder, exportCSV, createOrder };
+module.exports = { getOrders, getAnalytics, searchOrders, deleteOrder, exportCSV };

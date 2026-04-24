@@ -14,11 +14,9 @@ const {
   searchOrders,
   deleteOrder,
   exportCSV,
-  createOrder,
 } = require('../controllers/orderController');
 
 router.get('/', getOrders);
-router.post('/', createOrder);
 router.get('/analytics', getAnalytics);
 router.get('/export', exportCSV);
 router.post('/search', searchOrders);
