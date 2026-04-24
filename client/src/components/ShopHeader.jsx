@@ -10,8 +10,8 @@ export default function ShopHeader() {
   return (
     <header className="shop-header">
       <div className="shop-header-inner">
-        <Link to="/shop" className="shop-logo">
-          <span className="logo-icon">🛍️</span>
+        <Link to="/shop" className="shop-logo" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <img src="/automaton-logo.jpg" alt="Automaton AI" style={{ height: '32px', borderRadius: '6px' }} />
           <span className="logo-text">Automaton<span className="logo-accent">Store</span></span>
         </Link>
         

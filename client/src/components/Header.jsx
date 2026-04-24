@@ -14,8 +14,8 @@ const Header = ({ isConnected, activeCallCount = 0 }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo & Title */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-premium flex items-center justify-center shadow-lg shadow-brand-500/25">
-              <Phone size={20} className="text-white" />
+            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 overflow-hidden">
+              <img src="/automaton-logo.jpg" alt="Automaton AI Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-lg font-bold gradient-text leading-tight">

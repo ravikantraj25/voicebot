@@ -273,11 +273,20 @@ const Dashboard = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-surface-800/50 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between text-sm text-surface-500">
-            <p>Automaton AI Infosystem © {new Date().getFullYear()}</p>
-            <p className="text-xs">Powered by Twilio · Groq · MongoDB · Socket.io</p>
+      <footer className="border-t border-surface-800/50 mt-12 bg-surface-900/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <img src="/advit-logo.jpg" alt="ADVIT AI Labs" className="h-10 object-contain rounded bg-white p-1" />
+              <div>
+                <p className="text-sm font-semibold text-surface-200">ADVIT™ AI Labs</p>
+                <p className="text-xs text-surface-400">© {new Date().getFullYear()} All rights reserved.</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-medium text-surface-300">Powered by Automaton AI</p>
+              <p className="text-[10px] text-surface-500 mt-1">Twilio · Groq · MongoDB · Socket.io</p>
+            </div>
           </div>
         </div>
       </footer>
