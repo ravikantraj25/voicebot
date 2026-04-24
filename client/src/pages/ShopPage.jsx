@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiStar, FiShoppingCart, FiFilter, FiChevronDown } from 'react-icons/fi';
+import { FiSearch, FiStar, FiShoppingCart, FiFilter, FiChevronDown, FiSun, FiMoon } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
+import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
@@ -20,6 +21,7 @@ export default function ShopPage() {
   const [sort, setSort] = useState('newest');
   const [addedProduct, setAddedProduct] = useState(null);
   const { addToCart, totalItems } = useCart();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     fetchProducts();
@@ -81,6 +83,9 @@ export default function ShopPage() {
             <button type="submit">Search</button>
           </form>
           <div className="shop-header-actions">
+            <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle Theme">
+              {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+            </button>
             <Link to="/cart" className="cart-btn">
               <FiShoppingCart size={22} />
               {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}

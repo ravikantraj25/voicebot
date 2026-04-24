@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
+import { FiSun, FiMoon } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 import { FiTrash2, FiPlus, FiMinus, FiShoppingCart, FiArrowRight } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 
 export default function CartPage() {
+  const { theme, toggleTheme } = useTheme();
   const { cart, removeFromCart, updateQuantity, totalItems, subtotal, deliveryCharge, totalAmount } = useCart();
 
   if (cart.length === 0) {
@@ -35,6 +38,9 @@ export default function CartPage() {
             <span className="logo-text">Automaton<span className="logo-accent">Store</span></span>
           </Link>
           <div className="shop-header-actions">
+            <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle Theme">
+              {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+            </button>
             <Link to="/shop" className="admin-link">← Continue Shopping</Link>
           </div>
         </div>

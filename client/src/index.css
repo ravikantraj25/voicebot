@@ -2,6 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --surface-50: 248 250 252;
+  --surface-100: 241 245 249;
+  --surface-200: 226 232 240;
+  --surface-300: 203 213 225;
+  --surface-400: 148 163 184;
+  --surface-500: 100 116 139;
+  --surface-600: 71 85 105;
+  --surface-700: 51 65 85;
+  --surface-800: 30 41 59;
+  --surface-900: 15 23 42;
+  --surface-950: 2 6 23;
+  
+  --brand-500-glow: rgba(244, 63, 94, 0.25);
+  --bg-app: rgb(2 6 23);
+}
+
+[data-theme='light'] {
+  --surface-50: 2 6 23;
+  --surface-100: 15 23 42;
+  --surface-200: 30 41 59;
+  --surface-300: 51 65 85;
+  --surface-400: 71 85 105;
+  --surface-500: 100 116 139;
+  --surface-600: 148 163 184;
+  --surface-700: 203 213 225;
+  --surface-800: 226 232 240;
+  --surface-900: 241 245 249;
+  --surface-950: 248 250 252;
+  
+  --brand-500-glow: rgba(244, 63, 94, 0.1);
+  --bg-app: rgb(248 250 252);
+}
+
+[data-theme='light'] {
+  --surface-50: #0f172a;
+  --surface-100: #1e293b;
+  --surface-200: #334155;
+  --surface-300: #475569;
+  --surface-400: #64748b;
+  --surface-500: #94a3b8;
+  --surface-600: #cbd5e1;
+  --surface-700: #e2e8f0;
+  --surface-800: #f1f5f9;
+  --surface-900: #f8fafc;
+  --surface-950: #ffffff;
+  
+  --brand-500-glow: rgba(244, 63, 94, 0.1);
+  --bg-app: #f8fafc;
+}
+
+
 /* ─── Base Styles ─────────────────────────────────────── */
 @layer base {
   * {
@@ -11,7 +63,7 @@
   }
 
   body {
-    @apply bg-surface-950 text-surface-100 font-sans antialiased;
+    @apply bg-[var(--bg-app)] text-surface-100 font-sans antialiased;
     background-image: 
       radial-gradient(ellipse at 20% 50%, rgba(244, 63, 94, 0.08) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 20%, rgba(249, 115, 22, 0.05) 0%, transparent 50%),

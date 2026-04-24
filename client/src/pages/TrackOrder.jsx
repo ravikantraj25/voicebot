@@ -22,6 +22,7 @@ const statusIcons = {
 };
 
 export default function TrackOrder() {
+  const { theme, toggleTheme } = useTheme();
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);

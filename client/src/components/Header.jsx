@@ -3,9 +3,11 @@
  * Shows active call count with pulsing LIVE badge
  */
 import React from 'react';
-import { Phone, Wifi, WifiOff, Radio } from 'lucide-react';
+import { Phone, Wifi, WifiOff, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const Header = ({ isConnected, activeCallCount = 0 }) => {
+  const { theme, toggleTheme } = useTheme();
   return (
     <header className="border-b border-surface-800/50 bg-surface-950/80 backdrop-blur-xl sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -54,6 +56,14 @@ const Header = ({ isConnected, activeCallCount = 0 }) => {
               {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
               {isConnected ? 'Connected' : 'Disconnected'}
             </div>
+
+            {/* Theme Toggle */}
+            <button 
+              onClick={toggleTheme} 
+              className="p-2 rounded-xl border border-surface-700/50 text-surface-400 hover:text-brand-500 hover:bg-surface-800 transition-colors"
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
           </div>
         </div>
       </div>

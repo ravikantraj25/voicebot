@@ -7,6 +7,7 @@ import axios from 'axios';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function ProductDetail() {
+  const { theme, toggleTheme } = useTheme();
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, totalItems } = useCart();
@@ -59,6 +60,9 @@ export default function ProductDetail() {
             <span className="logo-text">Automaton<span className="logo-accent">Store</span></span>
           </Link>
           <div className="shop-header-actions">
+            <button onClick={toggleTheme} className="theme-toggle-btn" aria-label="Toggle Theme">
+              {theme === 'dark' ? <FiSun size={20} /> : <FiMoon size={20} />}
+            </button>
             <Link to="/cart" className="cart-btn">
               <FiShoppingCart size={22} />
               {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
