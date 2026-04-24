@@ -8,7 +8,7 @@ const Order = require('../models/Order');
 const Customer = require('../models/Customer');
 const { getMessages, getVoiceConfig } = require('../services/messageService');
 const { sendWhatsAppFallback, sendWhatsAppConfirmation } = require('../services/twilioService');
-const { generateCallSummary } = require('../services/groqService');
+const { generateCallSummary, processWhatsAppMessage } = require('../services/groqService');
 
 const VoiceResponse = twilio.twiml.VoiceResponse;
 
@@ -448,6 +448,66 @@ const handleRecording = async (req, res) => {
   }
 };
 
+/**
+ * POST /api/twilio/whatsapp-inbound
+ * Handles incoming WhatsApp messages from Twilio Sandbox
+ */
+const handleWhatsAppInbound = async (req, res) => {
+  try {
+    const { From, Body } = req.body;
+    console.log(`💬 WhatsApp from ${From}: ${Body}`);
+
+    // Create a TwiML response
+    const MessagingResponse = require('twilio').twiml.MessagingResponse;
+    const twiml = new MessagingResponse();
+
+    // Check if we have an order associated with this number recently
+    const recentOrder = await Order.findOne({ phoneNumber: From.replace('whatsapp:', '') }).sort({ createdAt: -1 });
+
+    if (recentOrder) {
+      // 1. Process via Groq
+      const { replyText, action } = await processWhatsAppMessage(recentOrder, Body);
+      
+      // 2. Save customer message and bot reply to transcript
+      recentOrder.transcript.push({ role: 'customer', text: `(WhatsApp) ${Body}` });
+      recentOrder.transcript.push({ role: 'bot', text: `(WhatsApp) ${replyText}` });
+      
+      // 3. Take action if needed
+      if (action === 'confirm' && recentOrder.status !== 'confirmed') {
+        recentOrder.status = 'confirmed';
+      } else if (action === 'reject' && recentOrder.status !== 'rejected') {
+        recentOrder.status = 'rejected';
+      }
+      
+      await recentOrder.save();
+      
+      // 4. Update the live dashboard
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('orderUpdated');
+        if (action === 'confirm' || action === 'reject') {
+          io.emit('callEnded', { orderId: recentOrder._id, status: recentOrder.status });
+        }
+      }
+      
+      // 5. Send TwiML reply
+      twiml.message(replyText);
+    } else {
+      twiml.message('Hi from Automaton Store! We could not find a recent order for this number. Please visit our website to place a new order.');
+    }
+
+    res.type('text/xml');
+    res.send(twiml.toString());
+  } catch (error) {
+    console.error(`❌ WhatsApp inbound error: ${error.message}`);
+    const MessagingResponse = require('twilio').twiml.MessagingResponse;
+    const twiml = new MessagingResponse();
+    twiml.message("Sorry, I'm having trouble connecting to the system right now.");
+    res.type('text/xml');
+    res.send(twiml.toString());
+  }
+};
+
 module.exports = {
   handleVoice,
   handleResponse,
@@ -457,4 +517,5 @@ module.exports = {
   handleStatus,
   handleRecording,
   handleInboundVoice,
+  handleWhatsAppInbound,
 };

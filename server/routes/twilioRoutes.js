@@ -32,4 +32,7 @@ router.post('/recording', handleRecording);
 // Inbound Calling
 router.post('/inbound', require('../controllers/twilioController').handleInboundVoice);
 
+// Inbound WhatsApp
+router.post('/whatsapp-inbound', require('../controllers/twilioController').handleWhatsAppInbound);
+
 module.exports = router;

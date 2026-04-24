@@ -61,29 +61,39 @@ RULES:
 4. Keep replies short (under 25 words). Act naturally, do not use markdown or emojis.`;
         }
       } else {
-        const productInfo = this.order?.productName
-          ? `${this.order.productQty} ${this.order.productName} for ₹${this.order.productPrice}`
-          : 'their recent order';
+        const productInfo = this.order?.items 
+          ? this.order.items.map(i => `${i.quantity}x ${i.productName}`).join(', ')
+          : this.order?.productName
+            ? `${this.order.productQty} ${this.order.productName}`
+            : 'their recent order';
+            
+        const address = this.order?.shippingAddress 
+          ? `${this.order.shippingAddress.street || ''}, ${this.order.shippingAddress.city || ''}, ${this.order.shippingAddress.pincode || ''}`
+          : 'the address provided';
+          
+        const customerName = this.order?.customerName || 'Customer';
 
-        systemPrompt = `You are Aria, a warm and friendly voice assistant calling to confirm an order.
+        systemPrompt = `You are Aria, a warm and friendly voice assistant calling ${customerName} to confirm their order.
 
 ORDER DETAILS: ${productInfo}
+TOTAL AMOUNT: ₹${this.order?.totalAmount || this.order?.productPrice || 0}
+SHIPPING ADDRESS: ${address}
+PAYMENT METHOD: ${this.order?.paymentMethod || 'COD'}
 CUSTOMER LANGUAGE: ${this.language === 'unknown' ? 'english' : this.language}
 
 RULES:
-- Reply ONLY in ${this.language === 'unknown' ? 'english' : this.language}. Keep replies under 25 words.
-- Sound like a real human, not a robot. Use natural phrases.
-- Do NOT repeat the order details after the first message. The customer already heard them.
-- NEVER use markdown, bullet points, asterisks, or emojis.
+- Reply ONLY in ${this.language === 'unknown' ? 'english' : this.language}. Keep replies short and natural (under 30 words).
+- Sound like a real human. Never use markdown, bullet points, asterisks, or emojis.
+- Do NOT repeat the full order details after the first message.
 
 CONVERSATION FLOW:
-1. First reply: Greet and ask if they want to confirm the order.
-2. If customer says YES/OK/CONFIRM/HAAN/HA/THEEK HAI → Say "Your order is confirmed! Thank you, have a great day!" then add [ORDER_CONFIRMED] at the end.
-3. If customer says NO/CANCEL/NAHI/NAKO → Say "Your order has been cancelled. Thank you for your time." then add [ORDER_REJECTED] at the end.
-4. If customer asks a question → Answer briefly, then ask again for confirmation.
-5. If unclear → Ask ONE simple yes/no question. Do not lecture them.
+1. If customer wants to confirm → Say "Your order is confirmed! Thank you, have a great day!" then add [ORDER_CONFIRMED] at the end.
+2. If customer wants to cancel → Say "Your order has been cancelled. Thank you for your time." then add [ORDER_REJECTED] at the end.
+3. If customer wants to change the address → Use the update_shipping_address tool.
+4. If customer wants to change the quantity → Use the update_order_quantity tool.
+5. If customer asks a question → Answer briefly, then ask again for confirmation.
 
-CRITICAL: When confirming or rejecting, you MUST include the exact tag [ORDER_CONFIRMED] or [ORDER_REJECTED] at the very end of your message. This triggers the system to end the call.`;
+CRITICAL: When confirming or rejecting the final order, you MUST include the exact tag [ORDER_CONFIRMED] or [ORDER_REJECTED] at the very end of your message. This triggers the system to end the call.`;
       }
 
       this.transcriptHistory.push({
@@ -206,6 +216,25 @@ CRITICAL: When confirming or rejecting, you MUST include the exact tag [ORDER_CO
             // Mock RAG retrieval
             console.log(`📚 [RAG Search] Query: ${args.query}`);
             reply = `According to our policies, your order will be delivered within 2 business days.`;
+          } else if (toolCall.function.name === 'update_shipping_address') {
+            reply = `Got it. I have updated your shipping address to ${args.new_address}. Should I go ahead and confirm the order now?`;
+            console.log(`📝 [DB Update] Address changed to: ${args.new_address}`);
+            if (this.order) {
+              this.order.shippingAddress.street = args.new_address;
+              await this.order.save();
+              this.io.emit('orderUpdated');
+            }
+          } else if (toolCall.function.name === 'update_order_quantity') {
+            reply = `Done! I've updated the quantity to ${args.new_quantity}. Your new total is ready. Should I confirm the order?`;
+            console.log(`📝 [DB Update] Quantity changed to: ${args.new_quantity}`);
+            if (this.order && this.order.items && this.order.items.length > 0) {
+              const oldQty = this.order.items[0].quantity;
+              this.order.items[0].quantity = args.new_quantity;
+              this.order.subtotal = (this.order.subtotal / oldQty) * args.new_quantity;
+              this.order.totalAmount = this.order.subtotal + this.order.deliveryCharge;
+              await this.order.save();
+              this.io.emit('orderUpdated');
+            }
           }
           
           // Append tool response to history so model knows it was executed
@@ -318,6 +347,34 @@ CRITICAL: When confirming or rejecting, you MUST include the exact tag [ORDER_CO
               query: { type: 'string', description: 'The question to search for in the knowledge base.' }
             },
             required: ['query']
+          }
+        }
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'update_shipping_address',
+          description: 'Updates the shipping address for the order if the customer wants to change it.',
+          parameters: {
+            type: 'object',
+            properties: {
+              new_address: { type: 'string', description: 'The new shipping address provided by the customer.' }
+            },
+            required: ['new_address']
+          }
+        }
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'update_order_quantity',
+          description: 'Updates the quantity of the product in the order.',
+          parameters: {
+            type: 'object',
+            properties: {
+              new_quantity: { type: 'number', description: 'The new quantity the customer wants.' }
+            },
+            required: ['new_quantity']
           }
         }
       }

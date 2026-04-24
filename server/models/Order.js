@@ -6,10 +6,19 @@ const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema(
   {
+    // ─── Customer Info ──────────────────────────
     phoneNumber: {
       type: String,
       required: [true, 'Phone number is required'],
       trim: true,
+    },
+    customerName: {
+      type: String,
+      default: null,
+    },
+    customerEmail: {
+      type: String,
+      default: null,
     },
     language: {
       type: String,
@@ -17,9 +26,41 @@ const orderSchema = new mongoose.Schema(
       enum: ['english', 'hindi', 'kannada', 'marathi'],
       default: 'english',
     },
+
+    // ─── Shipping Address ───────────────────────
+    shippingAddress: {
+      street: { type: String, default: '' },
+      city: { type: String, default: '' },
+      state: { type: String, default: '' },
+      pincode: { type: String, default: '' },
+    },
+
+    // ─── Order Items (multiple products) ────────
+    items: [{
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      productName: { type: String },
+      productPrice: { type: Number },
+      quantity: { type: Number, default: 1 },
+      image: { type: String },
+    }],
+
+    // ─── Order Totals ───────────────────────────
+    subtotal: { type: Number, default: 0 },
+    deliveryCharge: { type: Number, default: 0 },
+    discount: { type: Number, default: 0 },
+    totalAmount: { type: Number, default: 0 },
+
+    // ─── Payment ────────────────────────────────
+    paymentMethod: {
+      type: String,
+      enum: ['cod', 'upi', 'card', 'netbanking'],
+      default: 'cod',
+    },
+
+    // ─── Status & Call ──────────────────────────
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'rejected', 'failed', 'no-response', 'escalated'],
+      enum: ['pending', 'confirmed', 'rejected', 'failed', 'no-response', 'escalated', 'shipped', 'delivered'],
       default: 'pending',
     },
     callSid: {
@@ -40,7 +81,7 @@ const orderSchema = new mongoose.Schema(
       default: 'none',
     },
 
-    // ─── Product Details (Feature 3) ────────────
+    // ─── Legacy Product Fields (backward compat) ─
     productName: {
       type: String,
       default: null,
@@ -52,6 +93,12 @@ const orderSchema = new mongoose.Schema(
     productPrice: {
       type: Number,
       default: 0,
+    },
+
+    // ─── Delivery ───────────────────────────────
+    estimatedDelivery: {
+      type: Date,
+      default: null,
     },
 
     // ─── AI Summary (Feature 8) ─────────────────

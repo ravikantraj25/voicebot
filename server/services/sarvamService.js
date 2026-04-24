@@ -3,7 +3,7 @@
  * Handles Speech-to-Text (saarika:v2) and Text-to-Speech (bulbul:v1)
  * Optimized for Indian languages: Hindi, Kannada, Marathi
  */
-const fetch = require('node-fetch');
+const axios = require('axios');
 const FormData = require('form-data');
 
 const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
@@ -26,31 +26,24 @@ const generateSpeech = async (text, language = 'hindi') => {
   try {
     const targetLanguageCode = languageMap[language.toLowerCase()] || 'hi-IN';
 
-    const response = await fetch('https://api.sarvam.ai/text-to-speech', {
-      method: 'POST',
+    const response = await axios.post('https://api.sarvam.ai/text-to-speech', {
+      inputs: [text],
+      target_language_code: targetLanguageCode,
+      speaker: 'meera',
+      pitch: 0,
+      pace: 1.0,
+      loudness: 1.5,
+      speech_sample_rate: 8000,
+      enable_preprocessing: true,
+      model: 'bulbul:v1',
+    }, {
       headers: {
         'Content-Type': 'application/json',
         'api-subscription-key': SARVAM_API_KEY,
-      },
-      body: JSON.stringify({
-        inputs: [text],
-        target_language_code: targetLanguageCode,
-        speaker: 'meera',
-        pitch: 0,
-        pace: 1.0,
-        loudness: 1.5,
-        speech_sample_rate: 8000,
-        enable_preprocessing: true,
-        model: 'bulbul:v1',
-      }),
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Sarvam TTS Error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
+    const data = response.data;
     const rawBase64 = data.audios[0]; // base64 WAV audio from Sarvam
     
     // Convert PCM WAV → mulaw for Twilio
@@ -64,7 +57,7 @@ const generateSpeech = async (text, language = 'hindi') => {
     const mulawBuffer = pcmToMulaw(pcmData);
     return mulawBuffer.toString('base64');
   } catch (error) {
-    console.error('Sarvam TTS Exception:', error);
+    console.error('Sarvam TTS Exception:', error.response ? error.response.data : error.message);
     throw error;
   }
 };
@@ -123,23 +116,16 @@ const transcribeSpeech = async (audioBuffer, language = 'hindi') => {
     formData.append('language_code', targetLanguageCode);
     formData.append('model', 'saarika:v2');
 
-    const response = await fetch('https://api.sarvam.ai/speech-to-text/translate', {
-      method: 'POST',
+    const response = await axios.post('https://api.sarvam.ai/speech-to-text/translate', formData, {
       headers: {
         'api-subscription-key': SARVAM_API_KEY,
-      },
-      body: formData,
+        ...formData.getHeaders()
+      }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Sarvam STT Error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data.transcript;
+    return response.data.transcript;
   } catch (error) {
-    console.error('Sarvam STT Exception:', error);
+    console.error('Sarvam STT Exception:', error.response ? error.response.data : error.message);
     throw error;
   }
 };

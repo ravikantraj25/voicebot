@@ -17,6 +17,8 @@ const callRoutes = require('./routes/callRoutes');
 const twilioRoutes = require('./routes/twilioRoutes');
 const exotelRoutes = require('./routes/exotelRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const productRoutes = require('./routes/productRoutes');
+const shopRoutes = require('./routes/shopRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -116,6 +118,8 @@ app.use('/api/call', callRoutes);
 app.use('/api/twilio', twilioRoutes);
 app.use('/api/exotel', exotelRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/shop', shopRoutes);
 
 // ─── Health Check ───────────────────────────────────────────
 app.get('/api/health', (req, res) => {
