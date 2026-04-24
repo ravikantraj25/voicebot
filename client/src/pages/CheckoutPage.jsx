@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FiSun, FiMoon } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 import { FiPhone, FiMapPin, FiCreditCard, FiShield, FiCheckCircle } from 'react-icons/fi';
 import { useCart } from '../context/CartContext';
 import axios from 'axios';

@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { FiSun, FiMoon } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 import { FiPackage, FiCheck, FiPhone, FiTruck, FiHome } from 'react-icons/fi';
 import axios from 'axios';
 
